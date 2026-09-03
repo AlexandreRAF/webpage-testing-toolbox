@@ -1,0 +1,48 @@
+#menu {
+    box-sizing: border-box;
+    width: max-content;
+    margin: 0;
+    padding: 2px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    outline: none;
+}
+
+.option,
+.group {
+    box-sizing: border-box;
+    min-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: start;
+}
+
+.option {
+    cursor: default;
+    user-select: none;
+}
+
+.option[aria-disabled="true"] {
+    opacity: 0.5;
+}
+
+.option[data-active="true"] {
+    background: Highlight !important;
+    color: HighlightText !important;
+}
+
+.group {
+    font-weight: 600;
+    opacity: 0.75;
+    cursor: default;
+    user-select: none;
+}
+
+hr {
+    border: 0;
+    border-top: 1px solid currentColor;
+    opacity: 0.25;
+    margin: 4px 2px;
+}
