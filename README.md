@@ -76,8 +76,8 @@ The following tools are planned additions to the testing suite:
 ```text
 main/
 |-- view_tester.py              # Main application window and controls
-|-- preview.py                  # Viewport module for main application
-`-- dd_workaround/              # Embedded-browser dropdown workaround
+|-- preview.py                  # Qt Quick host and Python signal bridge
+`-- Preview.qml                 # WebEngineView and viewport scaling
 assets/
 `-- view_tester.PNG             # Application preview image
 ```

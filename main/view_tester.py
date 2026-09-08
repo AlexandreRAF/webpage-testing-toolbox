@@ -1,12 +1,10 @@
 import sys
-import os
 
-from PySide6.QtCore import QUrl
+from PySide6.QtCore import Qt, QUrl
 
 from PySide6.QtWidgets import *
 
-from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWebEngineCore import QWebEngineScript, QWebEnginePage
+from PySide6.QtWebEngineQuick import QtWebEngineQuick
 
 from preview import Preview
 
@@ -19,12 +17,6 @@ PRESETS = {
 }
 
 DEFAULT_SIZING = {"width": 1000, "height": 700}
-
-CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
-WORKAROUND_JS_PATH = ('%s/dd_workaround/dropdown_injection.js' % CURRENT_DIR)
-WORKAROUND_CSS_PATH = ('%s/dd_workaround/popup.css' % CURRENT_DIR)
-
-page_loaded = False
 
 
 class ViewportTool(QMainWindow):
@@ -63,12 +55,10 @@ class ViewportTool(QMainWindow):
         self.height_box.valueChanged.connect(self.resize_preview)
 
         # Initialize the browser.
-        self.browser = QWebEngineView()
-        self.browser.urlChanged.connect(self.url_updater)
-        self.browser.loadFinished.connect(self.load_finished)
-        self.browser.loadStarted.connect(self.load_started)
-        self.install_dropdown_script()
-        self.preview = Preview(self.browser)
+        self.preview = Preview()
+        self.preview.urlChanged.connect(self.url_updater)
+        self.preview.loadFinished.connect(self.load_finished)
+        self.preview.loadStarted.connect(self.load_started)
 
         # Configure the controls bar.
         controls = QHBoxLayout()
@@ -93,53 +83,26 @@ class ViewportTool(QMainWindow):
         self.setCentralWidget(central)
 
         # Load the initial page and apply the initial viewport.
-        self.browser.setUrl(QUrl(self.url.text()))
         self.resize_preview()
+        self.preview.set_url(QUrl(self.url.text()))
 
     # Page loading status handling.
     def load_started(self):
-        global page_loaded 
-        page_loaded = False
-        self.status_label_updater()
+        self.status.setText("LOADING...")
+        self.status.setStyleSheet("font-weight: bold; color: red;")
 
-    def load_finished(self):
-        global page_loaded 
-        page_loaded = True
-        self.status_label_updater()
-
-    def status_label_updater(self):
-        global page_loaded
-        self.status.setText("LOADED" if page_loaded == True else "LOADING...")
-        self.status.setStyleSheet("font-weight: bold; color: %s;" % ('lime' if page_loaded == True else 'red'))
+    def load_finished(self, success):
+        self.status.setText("LOADED" if success else "LOAD FAILED")
+        self.status.setStyleSheet("font-weight: bold; color: %s;" % ('lime' if success else 'red'))
 
     def refresh_page(self):
         # Simulate "Ctrl + Shift + R" behavior.
-        self.browser.page().triggerAction(QWebEnginePage.WebAction.ReloadAndBypassCache)
+        self.preview.reload_bypassing_cache()
 
-    def url_updater(self):
+    def url_updater(self, address):
         # Updates the url if the page is redirected 
         # (this function is activated by a URL change listener).
-        self.url.setText(self.browser.url().url())
-
-    def install_dropdown_script(self):
-        # Dropdown menu behavior patch via js injection
-        script = QWebEngineScript()
-        script.setName("Dropdown menu workaround")
-
-        script.setInjectionPoint(QWebEngineScript.InjectionPoint.DocumentReady)
-        script.setWorldId(QWebEngineScript.ScriptWorldId.MainWorld)
-
-        # Also apply the patches inside iframes.
-        script.setRunsOnSubFrames(True)
-
-        # Opens the patch files and imports the css inside the js before injection, 
-        # as the injected script cannot read it directly.
-        js = open(WORKAROUND_JS_PATH).read().strip()
-        css = open(WORKAROUND_CSS_PATH).read().strip()
-        final_js = js.replace("__POPUP_CSS_FILE__", css, 1)
-
-        script.setSourceCode(final_js)
-        self.browser.page().scripts().insert(script)
+        self.url.setText(address.toString())
 
     @staticmethod
     def number_box(value):
@@ -159,10 +122,8 @@ class ViewportTool(QMainWindow):
             self.height_box.setValue(size[1])
 
     def resize_preview(self):
-        # Set the real browser size first, then tell the graphics view to
-        # scale that browser to fit the current screen.
+        # Qt Quick scales the browser without changing its CSS viewport.
         width, height = self.width_box.value(), self.height_box.value()
-        self.browser.setFixedSize(width, height)
         self.preview.set_size(width, height)
 
     def load_page(self):
@@ -173,20 +134,19 @@ class ViewportTool(QMainWindow):
             address = "https://" + address
             self.url.setText(address)
 
-        self.browser.setUrl(QUrl(address))
+        self.preview.set_url(QUrl(address))
 
     def rotate_page(self):
         # Gets current width and height and invert them,
         width, height = self.width_box.value(), self.height_box.value()
-
-        self.browser.setFixedSize(height, width)
-        self.preview.set_size(height, width)
 
         self.width_box.setValue(height)
         self.height_box.setValue(width)
 
 
 def main():
+    QApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts)
+    QtWebEngineQuick.initialize()
     app = QApplication(sys.argv)
     window = ViewportTool()
     window.showMaximized()
