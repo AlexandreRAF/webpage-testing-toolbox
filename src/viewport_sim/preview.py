@@ -17,7 +17,7 @@ class Preview(QQuickWidget):
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
         directory = Path(__file__).resolve().parent
-        self.setSource(QUrl.fromLocalFile(str(directory / "Preview.qml")))
+        self.setSource(QUrl.fromLocalFile(str(directory / "preview.qml")))
         if self.status() == QQuickWidget.Status.Error:
             raise RuntimeError("Unable to load browser preview:\n" +
                                "\n".join(error.toString() for error in self.errors()))

@@ -1,3 +1,3 @@
 /.vscode/
 /venv/
-main/__pycache__/
+src/viewport_sim/__pycache__/

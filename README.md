@@ -74,10 +74,11 @@ The following tools are planned additions to the testing suite:
 ## Project structure
 
 ```text
-main/
-|-- view_tester.py              # Main application window and controls
-|-- preview.py                  # Qt Quick host and Python signal bridge
-`-- Preview.qml                 # WebEngineView and viewport scaling
+src/
+|-- viewport_sim/
+    |-- viewport_sim.py              # Main application window and controls
+    |-- preview.py                   # Qt Quick host and Python signal bridge
+    `-- preview.qml                  # WebEngineView and viewport scaling
 assets/
 `-- view_tester.PNG             # Application preview image
 ```
