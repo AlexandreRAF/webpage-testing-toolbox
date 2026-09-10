@@ -38,7 +38,7 @@ venv_creation_components\create_venv_windows.bat
 Start the application using the Windows launcher:
 
 ```bat
-run_windows.bat
+src\viewport_sim\run_windows.bat
 ```
 
 ### Linux
@@ -52,7 +52,7 @@ Create the environment and install dependencies:
 Start the application using the Linux launcher:
 
 ```bash
-./run_linux.sh
+./src/viewport_sim/run_linux.sh
 ```
 
 Always start the application with the run script for your operating system. The run script activates the correct virtual environment and applies the platform-specific launch configuration before starting the application; do not run `main/view_tester.py` directly.

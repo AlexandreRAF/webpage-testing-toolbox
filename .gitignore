@@ -1,3 +1,4 @@
 /.vscode/
 /venv/
 src/viewport_sim/__pycache__/
+src/console_logger/__pycache__/
