@@ -1,22 +1,21 @@
 import sys
+from pathlib import Path
+import json
 
 from PySide6.QtCore import Qt, QUrl
-
 from PySide6.QtWidgets import *
-
 from PySide6.QtWebEngineQuick import QtWebEngineQuick
 
 from preview import Preview
 
-# TODO: Move the settings into an external json or cfg file
-PRESETS = {
-    "Mobile": (390, 844),
-    "Tablet": (768, 1024),
-    "Laptop": (1366, 768),
-    "Desktop": (1920, 1080),
-}
 
-DEFAULT_SIZING = {"width": 1000, "height": 700}
+CURRENT_DIR = Path(__file__).resolve().parent
+
+cfg_file = json.load(open('%s/presets.jsonc' % CURRENT_DIR, "r"))
+
+PRESETS = cfg_file['presets']
+
+DEFAULT_SIZING = cfg_file['default-sizing']
 
 
 class ViewportTool(QMainWindow):
