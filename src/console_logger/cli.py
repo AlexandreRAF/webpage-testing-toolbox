@@ -1,13 +1,12 @@
 import sys
 import argparse
 
-from validators import Validators
-
-from logger import Logger
-
 from pandas import Timestamp
 
-URL_LIST = BROWSER = OUTPUT_PATH = HEADLESS = None
+from validators import Validators
+from logger import Logger
+
+OUTPUT_PATH = None
 
 #TODO: Implement paralel workers feature
 #WORKERS = None 
@@ -28,15 +27,15 @@ class Initialize:
         if self.checkConditions():
             print("-------------------------------")
             print("Pre-flight verification passed!")
-            self.setVariables()
-            self.logger.setVariables(URL_LIST, BROWSER, OUTPUT_PATH, HEADLESS)
-            self.logger.logVariables()
-            self.logger.saveCSV()
+            variables = self.setVariables()
+            self.logger.logVariables(variables['url_list'], variables['browser'], variables['headless'])
+            self.logger.saveCSV(variables['output_path'])
         else:
             print("Pre-flight verification failed!")
 
 
     def initializeArguments(self):
+        # Set and parse the arguments 
         parser = argparse.ArgumentParser()
         
         parser.add_argument("--url-file", nargs=1, help="Provide an URL map file or an sitemap URL", required=False)
@@ -45,8 +44,6 @@ class Initialize:
         parser.add_argument("--browser", choices=["firefox", "chromium"], help="Browser to run", required=False, default='chromium')
         parser.add_argument("-o", "--output-path", nargs=1, help="Path to output the CSV report", required=False)
         parser.add_argument("-hl", "--headless", help="Run in headless mode", action='store_true', required=False)
-        #parser.add_argument("-v", "--verbose", help="Enable higher verbosity", action='store_true', required=False)
-        #parser.add_argument("-l", "--log", help="Enable logging", action='store_true', required=False)
 
         args = parser.parse_args()
 
@@ -56,8 +53,6 @@ class Initialize:
         self.browser = args.browser if not type(args.browser) == list else args.browser[0]
         self.outputPath = args.output_path if not type(args.output_path) == list else args.output_path[0]
         self.headlessEnabled = args.headless
-        #self.verboseEnabled = args.verbose
-        #self.logEnabled = args.log
 
     def printArgs(self):
         print("URL file: " + str(self.urlFile))
@@ -66,8 +61,6 @@ class Initialize:
         print("browser: " + str(self.browser))
         print("Output path: " + str(self.outputPath))
         print("Headless: " + str(self.headlessEnabled))
-        #print("Verbose: " + str(self.verboseEnabled))
-        #print("Logs: " + str(self.logEnabled))
 
     def checkConditions(self):
         global URL_LIST
@@ -123,13 +116,9 @@ class Initialize:
 
     def setVariables(self):
         # The URL_LIST variable is already set on the checkConditions() function.
-        global BROWSER, OUTPUT_PATH, HEADLESS#, WORKERS
-        #WORKERS = self.workers
-        BROWSER = self.browser
-        HEADLESS = self.headlessEnabled
-        OUTPUT_PATH = self.outputPath
 
         print("Parameter variables set")
+        return {'browser': self.browser, 'headless': self.headlessEnabled, 'output_path': self.outputPath, 'url_list': URL_LIST}
 
 def main():
     startTime = Timestamp.now()

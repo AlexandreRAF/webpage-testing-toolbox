@@ -2,14 +2,12 @@ import pandas as pd
 from playwright.sync_api import sync_playwright
 from pathlib import Path
 
-URL_LIST = BROWSER = OUTPUT_PATH = HEADLESS = None
-
 class Logger:
     def __init__(self):
         self.dataframe = pd.DataFrame(columns=['time', 'page', 'message_type', 'message'])
 
-    def logVariables(self):
-        totalUrls = len(URL_LIST)
+    def logVariables(self , url_list, browser_option, headless_option):
+        totalUrls = len(url_list)
         currProgress = 0
 
         print("-------------------------------")
@@ -17,14 +15,14 @@ class Logger:
         print("\r0 of " + str(totalUrls) + " pages...", end='')
 
         with sync_playwright() as p:
-            if BROWSER == 'firefox':
-                browser = p.firefox.launch(headless=HEADLESS)
+            if browser_option == 'firefox':
+                browser = p.firefox.launch(headless=headless_option)
             else:
-                browser = p.chromium.launch(headless=HEADLESS)
+                browser = p.chromium.launch(headless=headless_option)
 
             page = browser.new_page()
 
-            for url in URL_LIST:
+            for url in url_list:
                 startTime = pd.Timestamp.now()
                 page.goto(url)
                 try:
@@ -32,6 +30,7 @@ class Logger:
                 except:
                     currTime = pd.Timestamp.now()
                     self.dataframe.loc[len(self.dataframe)] = [currTime, url, 'LOADING_TIMED_OUT', 'NOT A CONSOLE MESSAGE: Loading timed out, proceeding to the next page...']
+                    #TODO: Add timeout CLI argument.
 
                 currTime = pd.Timestamp.now()
                 timeDelta = currTime - startTime
@@ -51,16 +50,9 @@ class Logger:
             browser.close()
             
 
-    def setVariables(self, url_list, browser, output_path, headless):
-        global URL_LIST, BROWSER, OUTPUT_PATH, HEADLESS
-        URL_LIST = url_list
-        BROWSER = browser
-        OUTPUT_PATH = output_path
-        HEADLESS =  headless
-
-    def saveCSV(self):
+    def saveCSV(self, output_path):
         file_path = (
-            str(Path(OUTPUT_PATH).absolute())
+            str(Path(output_path).absolute())
             + "/"
             + str(pd.Timestamp.now().date()) 
             + "-"
