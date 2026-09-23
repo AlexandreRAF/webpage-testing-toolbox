@@ -6,8 +6,6 @@ from pandas import Timestamp
 from validators import Validators
 from logger import Logger
 
-OUTPUT_PATH = None
-
 class Initialize:
     def __init__(self):
 
@@ -25,7 +23,7 @@ class Initialize:
             print("-------------------------------")
             print("Pre-flight verification passed!")
             variables = self.setVariables()
-            self.logger.logVariables(variables['url_list'], variables['browser'], variables['headless'])
+            self.logger.checkPages(variables['url_list'], variables['browser'], variables['headless'])
             self.logger.saveCSV(variables['output_path'])
         else:
             print("Pre-flight verification failed!")
@@ -33,7 +31,7 @@ class Initialize:
 
     def initializeArguments(self):
         # Set and parse the arguments 
-        parser = argparse.ArgumentParser()
+        parser = argparse.ArgumentParser(description='Check webpages for potential WCAG accessibility issues.')
         
         parser.add_argument("--url-file", nargs=1, help="Provide an URL map file or an sitemap URL", required=False)
         parser.add_argument("--urls", nargs='+', help="Provide the urls for scan separated by spaces", required=False)
@@ -57,8 +55,8 @@ class Initialize:
         print("Headless: " + str(self.headlessEnabled))
 
     def checkConditions(self):
-        global URL_LIST
         valid = True
+        self.urlList = []
 
         if not (self.urlFile or self.urls):
             print("ERROR: --url-file or --urls must be provided") 
@@ -69,17 +67,17 @@ class Initialize:
             valid = False
 
         elif self.urls:
-            URL_LIST = self.validators.validateUrlList(self.urls)
-            if len(URL_LIST) > 0:
-                print("selected urls count: ", len(URL_LIST))
+            self.urlList = self.validators.validateUrlList(self.urls)
+            if len(self.urlList) > 0:
+                print("selected urls count: ", len(self.urlList))
             else:
                 print("ERROR: URL list rejected")
                 valid = False
 
         elif self.urlFile:
-            URL_LIST = self.validators.validateUrlFile(str(self.urlFile))
-            if len(URL_LIST) > 0:
-                print("Selected urls count: ", len(URL_LIST))    
+            self.urlList = self.validators.validateUrlFile(str(self.urlFile))
+            if len(self.urlList) > 0:
+                print("Selected urls count: ", len(self.urlList))
             else:
                 print("ERROR: URL File rejected")
                 valid = False 
@@ -99,10 +97,10 @@ class Initialize:
         return valid
 
     def setVariables(self):
-        # The URL_LIST variable is already set on the checkConditions() function.
+        # The URL list is already set by checkConditions().
 
         print("Parameter variables set")
-        return {'browser': self.browser, 'headless': self.headlessEnabled, 'output_path': self.outputPath, 'url_list': URL_LIST}
+        return {'browser': self.browser, 'headless': self.headlessEnabled, 'output_path': self.outputPath, 'url_list': self.urlList}
 
 def main():
     startTime = Timestamp.now()
