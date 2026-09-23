@@ -2,3 +2,4 @@
 /venv/
 src/viewport_sim/__pycache__/
 src/console_logger/__pycache__/
+src/accessibility_checker/__pycache__/
